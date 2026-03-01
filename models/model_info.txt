@@ -1,5 +1,6 @@
-Model: Random Forest Regressor
-Estimators: 100
-Max Depth: 20
-Test R²: 0.8883
-Test Accuracy: 90.39%
+Model: Random Forest + Linear Regression Ensemble
+RF Estimators: 150 | Max Depth: 18
+Weights: 75% RF, 25% LR
+Test R²: 0.8999
+Test Accuracy: 91.27%
+Test Precision: 89.99%

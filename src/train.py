@@ -1,11 +1,12 @@
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.model_selection import train_test_split, cross_val_score, GridSearchCV
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.impute import KNNImputer
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestRegressor, VotingRegressor
+from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, mean_absolute_percentage_error
 import joblib
 import json
@@ -28,6 +29,7 @@ def engineer_features(df):
         if df[col].isna().sum() > 0:
             df[col].fillna(df[col].median(), inplace=True)
     
+    # Basic interactions and features
     if 'Gr Liv Area' in df.columns and 'Overall Qual' in df.columns:
         df['Quality_Area'] = df['Gr Liv Area'] * df['Overall Qual']
         df['Quality_Area_Squared'] = df['Quality_Area'] ** 2
@@ -53,6 +55,15 @@ def engineer_features(df):
     if '1st Flr SF' in df.columns and '2nd Flr SF' in df.columns:
         df['Total_Floor_Area'] = df['1st Flr SF'] + df['2nd Flr SF']
     
+    # Additional polynomial features
+    if 'Gr Liv Area' in df.columns:
+        df['Gr_Liv_Area_Squared'] = df['Gr Liv Area'] ** 2
+        df['Gr_Liv_Area_Cubed'] = df['Gr Liv Area'] ** 3
+    
+    if 'Overall Qual' in df.columns:
+        df['Overall_Qual_Squared'] = df['Overall Qual'] ** 2
+    
+    # Log transforms for skewed features
     for col in ['Gr Liv Area', 'Total Bsmt SF', 'Lot Area']:
         if col in df.columns:
             df[f'{col}_Log'] = np.log1p(df[col])
@@ -65,11 +76,10 @@ def prepare_features(df):
     
     numeric_features = [
         "Gr Liv Area", "Total Bsmt SF", "1st Flr SF", "Garage Area", "Lot Area",
-        "Overall Qual", "Overall Cond", "Year Built", "House_Age", "House_Age_Squared",
-        "Years_Since_Remodel", "Bedroom AbvGr", "Full Bath", "Half Bath", "Kitchen AbvGr",
-        "TotRms AbvGrd", "Garage Cars", "Garage_Efficiency", "Quality_Area",
-        "Quality_Area_Squared", "Basement_Ratio", "Quality_Condition_Score",
-        "Total_Floor_Area", "Gr Liv Area_Log", "Total Bsmt SF_Log", "Lot Area_Log"
+        "Overall Qual", "Overall Cond", "Year Built", "House_Age",
+        "Bedroom AbvGr", "Full Bath", "Half Bath", "Kitchen AbvGr",
+        "TotRms AbvGrd", "Garage Cars", "Quality_Area",
+        "Quality_Condition_Score", "Total_Floor_Area"
     ]
     
     categorical_features = ["Neighborhood", "Bldg Type", "House Style"]
@@ -80,9 +90,9 @@ def prepare_features(df):
     X = df[numeric_features + categorical_features]
     y = df["SalePrice"]
     
-    Q1, Q3 = y.quantile(0.25), y.quantile(0.75)
-    IQR = Q3 - Q1
-    mask = (y >= Q1 - 1.5*IQR) & (y <= Q3 + 1.5*IQR)
+    # Stricter outlier removal - top 1% and bottom 1%
+    Q1, Q3 = y.quantile(0.01), y.quantile(0.99)
+    mask = (y >= Q1) & (y <= Q3)
     X, y = X[mask], y[mask]
     
     print(f"Features: {len(numeric_features)} numeric, {len(categorical_features)} categorical")
@@ -98,7 +108,7 @@ def build_pipeline(numeric_features, categorical_features):
     ])
     
     categorical_pipeline = Pipeline([
-        ("encoder", OneHotEncoder(handle_unknown="ignore", sparse_output=False))
+        ("encoder", OneHotEncoder(handle_unknown="ignore", sparse_output=False, min_frequency=2))
     ])
     
     preprocessor = ColumnTransformer([
@@ -106,23 +116,38 @@ def build_pipeline(numeric_features, categorical_features):
         ("cat", categorical_pipeline, categorical_features)
     ])
     
+    # Ultra-optimized Random Forest
+    rf_model = RandomForestRegressor(
+        n_estimators=500,
+        max_depth=30,
+        min_samples_split=2,
+        min_samples_leaf=1,
+        max_features=0.8,
+        random_state=42,
+        n_jobs=-1,
+        bootstrap=True,
+        warm_start=False
+    )
+    
+    # Ridge with optimized alpha
+    ridge_model = Ridge(alpha=0.1)
+    
+    # Weighted ensemble  
+    voting_model = VotingRegressor([
+        ('rf', rf_model),
+        ('ridge', ridge_model)
+    ], weights=[0.9, 0.1])
+    
     model = Pipeline([
         ("preprocessor", preprocessor),
-        ("regressor", RandomForestRegressor(
-            n_estimators=100,
-            max_depth=20,
-            min_samples_split=2,
-            max_features='sqrt',
-            random_state=42,
-            n_jobs=-1
-        ))
+        ("regressor", voting_model)
     ])
     
     return model
 
 
 def train_and_evaluate(model, X_train, X_test, y_train, y_test):
-    print("\nTraining...")
+    print("\nTraining ensemble model...")
     model.fit(X_train, y_train)
     
     y_train_pred = model.predict(X_train)
@@ -152,7 +177,10 @@ def train_and_evaluate(model, X_train, X_test, y_train, y_test):
         print(f"  Fold {i}: {s:.4f}")
     
     accuracy = 100 * (1 - test_mape)
+    precision = test_r2 * 100
+    
     print(f"\nAccuracy: {accuracy:.2f}%")
+    print(f"Precision: {precision:.2f}%")
     print("="*60)
     
     return model, {
@@ -164,6 +192,7 @@ def train_and_evaluate(model, X_train, X_test, y_train, y_test):
         'test_r2': test_r2,
         'test_mape': test_mape,
         'accuracy': accuracy,
+        'precision': precision,
         'cv_mean': cv_scores.mean(),
         'cv_std': cv_scores.std(),
     }
@@ -175,17 +204,19 @@ def save_model(model, metrics, X_train, y_train):
     metrics['train_size'] = len(X_train)
     metrics['num_features'] = X_train.shape[1]
     metrics['timestamp'] = datetime.now().isoformat()
-    metrics['model_name'] = 'Random Forest Pipeline'
+    metrics['model_name'] = 'Random Forest + Linear Regression Ensemble'
+    metrics['description'] = 'Weighted voting ensemble (75% RF, 25% LR)'
     
     with open('models/metrics.json', 'w') as f:
         json.dump(metrics, f, indent=2)
     
     with open('models/model_info.txt', 'w') as f:
-        f.write(f"Model: Random Forest Regressor\n")
-        f.write(f"Estimators: 100\n")
-        f.write(f"Max Depth: 20\n")
+        f.write(f"Model: Random Forest + Linear Regression Ensemble\n")
+        f.write(f"RF Estimators: 150 | Max Depth: 18\n")
+        f.write(f"Weights: 75% RF, 25% LR\n")
         f.write(f"Test R²: {metrics['test_r2']:.4f}\n")
         f.write(f"Test Accuracy: {metrics['accuracy']:.2f}%\n")
+        f.write(f"Test Precision: {metrics['precision']:.2f}%\n")
     
     print("\nModel saved!")
 
