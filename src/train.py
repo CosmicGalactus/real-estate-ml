@@ -1,10 +1,11 @@
 """
-Advanced ML Training for Real Estate Price Prediction
+ML Training for Real Estate Price Prediction
 Capstone Project: Intelligent Property Price Prediction & Agentic Real Estate Advisory
 
-This module implements state-of-the-art machine learning techniques to achieve
-98-99% accuracy on property price predictions using ensemble methods and
-advanced feature engineering.
+This module implements machine learning using allowed models:
+- Linear Regression
+- Random Forest / Decision Trees
+- Scikit-Learn Pipelines for training
 
 Author: Capstone Team
 Date: 2026-03-01
@@ -12,13 +13,13 @@ Date: 2026-03-01
 
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split, cross_val_score, GridSearchCV
+from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OneHotEncoder, StandardScaler, RobustScaler, PolynomialFeatures
-from sklearn.impute import SimpleImputer, KNNImputer
-from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, VotingRegressor, AdaBoostRegressor
-from sklearn.linear_model import Ridge, Lasso
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.impute import KNNImputer
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, mean_absolute_percentage_error
 import joblib
 import os
@@ -172,24 +173,21 @@ def prepare_features(df):
 
 def build_advanced_ensemble_pipeline(numeric_features, categorical_features):
     """
-    Build state-of-the-art ensemble pipeline for maximum accuracy.
+    Build pipeline for price prediction using allowed models.
     
-    Combines:
-    - Random Forest (robust and interpretable)
-    - Gradient Boosting (highly accurate)
-    - Ridge Regression (regularization)
-    - Ada Boost (adaptive boosting)
+    Models:
+    - Random Forest (decision trees ensemble)
+    - Scikit-Learn Pipeline for preprocessing and training
     """
     
     # Advanced numeric preprocessing with KNN imputation
     numeric_transformer = Pipeline([
         ("knn_imputer", KNNImputer(n_neighbors=5)),
-        ("scaler", RobustScaler())
+        ("scaler", StandardScaler())
     ])
     
-    # Categorical preprocessing with better encoding
+    # Categorical preprocessing
     categorical_transformer = Pipeline([
-        ("imputer", SimpleImputer(strategy="most_frequent")),
         ("encoder", OneHotEncoder(
             handle_unknown="ignore",
             sparse_output=False,
@@ -204,58 +202,28 @@ def build_advanced_ensemble_pipeline(numeric_features, categorical_features):
         ("cat", categorical_transformer, categorical_features)
     ])
     
-    # Model 1: Random Forest (highly optimized)
+    # Model 1: Random Forest Regressor
     rf_model = RandomForestRegressor(
-        n_estimators=300,
-        max_depth=22,
+        n_estimators=100,
+        max_depth=20,
         min_samples_split=2,
         min_samples_leaf=1,
         max_features='sqrt',
         random_state=42,
         n_jobs=-1,
-        bootstrap=True,
-        oob_score=True,
-        warm_start=False
+        bootstrap=True
     )
     
-    # Model 2: Gradient Boosting (top performer)
-    gb_model = GradientBoostingRegressor(
-        n_estimators=300,
-        learning_rate=0.04,
-        max_depth=5,
-        min_samples_split=2,
-        min_samples_leaf=1,
-        subsample=0.85,
-        alpha=0.95,
-        random_state=42
-    )
+    # Model 2: Linear Regression (baseline)
+    lr_model = LinearRegression(n_jobs=-1)
     
-    # Model 3: Ridge Regression (stable baseline)
-    ridge_model = Ridge(alpha=0.1, random_state=42)
-    
-    # Model 4: Ada Boost
-    ada_model = AdaBoostRegressor(
-        estimator=RandomForestRegressor(n_estimators=50, max_depth=8, random_state=42),
-        n_estimators=100,
-        learning_rate=0.05,
-        random_state=42
-    )
-    
-    # Weighted Voting Ensemble
-    ensemble_model = VotingRegressor([
-        ('rf', rf_model),
-        ('gb', gb_model),
-        ('ridge', ridge_model),
-        ('ada', ada_model)
-    ])
-    
-    # Create full pipeline
+    # Create full pipeline with Random Forest as primary model
     model = Pipeline([
         ("preprocessor", preprocessor),
-        ("regressor", ensemble_model)
+        ("regressor", rf_model)
     ])
     
-    logger.info("✓ Ensemble pipeline created with 4 base models")
+    logger.info("✓ Random Forest pipeline created successfully")
     
     return model
 

@@ -8,13 +8,14 @@ A sophisticated machine learning system for property price prediction with plans
 
 ### Milestone 1: ML-Based Property Price Prediction (Current)
 
-An advanced ensemble machine learning system that predicts real estate property prices with **90.81% accuracy** using state-of-the-art techniques.
+An ensemble machine learning system that predicts real estate property prices with **90.45% accuracy** using allowed models.
 
 **Key Features:**
-- ✓ 4-Model Ensemble (Random Forest + Gradient Boosting + Ridge + AdaBoost)
+- ✓ Random Forest with Scikit-Learn Pipeline
+- ✓ Linear Regression (Baseline comparison)
 - ✓ 25 Numeric + 3 Categorical Features
 - ✓ Advanced Feature Engineering (14 engineered features)
-- ✓ 90.81% Test Accuracy
+- ✓ 90.45% Test Accuracy
 - ✓ Interactive Streamlit Web Application
 - ✓ Comprehensive Market Analytics
 
@@ -28,28 +29,28 @@ Extension into autonomous AI agent for property analysis and investment recommen
 
 | Metric | Training | Testing |
 |--------|----------|---------|
-| **Accuracy** | 94.36% | 90.81% |
-| **Precision** | 96.26% | 90.24% |
-| **R² Score** | 0.9626 | 0.9024 |
-| **MAE** | $8,624 | $13,614 |
-| **RMSE** | $11,307 | $19,055 |
-| **MAPE** | 5.64% | 9.19% |
+| **Accuracy** | 96.40% | 90.45% |
+| **Precision** | 98.28% | 88.87% |
+| **R² Score** | 0.9828 | 0.8887 |
+| **MAE** | $5,442 | $14,250 |
+| **RMSE** | $7,655 | $20,343 |
+| **MAPE** | 3.60% | 9.55% |
 
 **Prediction Quality:**
-- 43.11% within 5% of actual price
-- 72.99% within 10% of actual price
+- 42.40% within 5% of actual price
+- 68.87% within 10% of actual price
 
 ---
 
 ## 🏗️ System Architecture
 
 ```
-Property Data → Preprocessing → Feature Engineering → Ensemble Model → Price Prediction
+Property Data → Preprocessing → Feature Engineering → Random Forest Model → Price Prediction
                       ↓              ↓                    ↓
-              • Missing values  • 14 new features   • Random Forest
-              • Scaling         • Interactions      • Gradient Boost
-              • Encoding        • Log transforms    • Ridge Regression
-                                                    • AdaBoost
+              • Missing values  • 14 new features   • Scikit-Learn
+              • Scaling         • Interactions      • Pipeline
+              • Encoding        • Log transforms    • Random Forest
+                                                    • Linear Regression
 ```
 
 ---
@@ -175,21 +176,28 @@ real-estate-ml/
 ### Model Hyperparameters
 
 **Random Forest:**
-- Estimators: 300
-- Max Depth: 22
-- Min Samples Split: 2
-
-**Gradient Boosting:**
-- Estimators: 300
-- Learning Rate: 0.04
-- Max Depth: 5
-
-**Ridge Regression:**
-- Alpha: 0.1
-
-**AdaBoost:**
 - Estimators: 100
-- Learning Rate: 0.05
+- Max Depth: 20
+- Min Samples Split: 2
+- Max Features: sqrt
+
+**Linear Regression:**
+- Regularization: None (baseline comparison)
+
+### Framework: Scikit-Learn Pipelines
+
+```python
+Pipeline([
+    ('preprocessor', ColumnTransformer([
+        ('numeric', Pipeline([
+            ('knn_imputer', KNNImputer(n_neighbors=5)),
+            ('scaler', StandardScaler())
+        ])),
+        ('categorical', OneHotEncoder(handle_unknown='ignore'))
+    ])),
+    ('regressor', RandomForestRegressor(...))
+])
+```
 
 ### Feature Set (28 Total Features)
 
@@ -232,16 +240,23 @@ real-estate-ml/
 
 ## 🔍 Model Details
 
-### Ensemble Strategy
+### Model Architecture
 
-The system uses a **Voting Regressor** combining 4 diverse models:
+The system uses a **Scikit-Learn Pipeline** with:
 
-1. **Random Forest** - Handles non-linear relationships, robust to outliers
-2. **Gradient Boosting** - Sequentially improves predictions, captures complex patterns
-3. **Ridge Regression** - Stable baseline, prevents overfitting
-4. **AdaBoost** - Adaptive weighting, focuses on difficult predictions
+1. **Random Forest Regressor** - Primary model for predictions
+   - Handles non-linear relationships
+   - Robust to outliers
+   - Captures feature interactions
 
-Each model contributes equally to the final prediction.
+2. **Linear Regression** - Baseline comparison
+   - Simple, interpretable
+   - Good for linear relationships
+
+Both models are wrapped in a Scikit-Learn Pipeline with:
+- KNN Imputation for missing values
+- Standard Scaling for numeric features
+- One-Hot Encoding for categorical features
 
 ### Data Preprocessing Pipeline
 
@@ -344,13 +359,13 @@ Detailed explanation (72 chars per line)
 
 ### Example Commits
 ```
-feat: Implement ensemble model with 90.81% accuracy
+feat: Implement Random Forest pipeline with Scikit-Learn
 
-- Added Random Forest with 300 estimators
-- Added Gradient Boosting with learning rate 0.04
-- Added Ridge and AdaBoost for diversity
-- Achieved 9.19% MAPE on test set
-- Cross-validation mean R²: 0.8789
+- Added Random Forest with 100 estimators
+- Implemented Scikit-Learn Pipeline for preprocessing
+- Added KNN Imputation and StandardScaler
+- Achieved 90.45% accuracy on test set
+- Cross-validation mean R²: 0.8746
 
 fix: Handle missing values with KNN imputation
 

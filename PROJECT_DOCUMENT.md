@@ -36,9 +36,11 @@ Extends the system into an intelligent agent-based application that autonomously
 - ✓ Analyze price drivers and market insights
 
 #### Technical Requirements
-- **Models Used:** Random Forest, Gradient Boosting, Ridge Regression, AdaBoost
-- **Framework:** Scikit-Learn with advanced pipelines
-- **Preprocessing:** StandardScaler, RobustScaler, KNNImputer, OneHotEncoder
+- **Models Allowed:** 
+  - Linear Regression
+  - Random Forest / Decision Trees
+- **Framework:** Scikit-Learn with Pipelines
+- **Preprocessing:** StandardScaler, KNNImputer, OneHotEncoder
 - **Evaluation Metrics:**
   - Mean Absolute Error (MAE)
   - Root Mean Squared Error (RMSE)
@@ -83,17 +85,16 @@ Real Estate ML System
 │   │   ├── Scaling (RobustScaler)
 │   │   └── Encoding (OneHotEncoder)
 │   │
-│   ├── Ensemble Model (4-Model Voting)
-│   │   ├── Random Forest (300 estimators)
-│   │   ├── Gradient Boosting (300 estimators)
-│   │   ├── Ridge Regression (Alpha=0.1)
-│   │   └── AdaBoost (100 estimators)
+│   ├── Ensemble Model (Random Forest Pipeline)
+│   │   ├── Random Forest (100 estimators, max_depth=20)
+│   │   ├── Linear Regression (Baseline comparison)
+│   │   └── Scikit-Learn Pipeline for preprocessing
 │   │
 │   └── Evaluation
-│       ├── Test Accuracy: 90.81%
-│       ├── R² Score: 0.9024
-│       ├── MAE: $13,614
-│       └── RMSE: $19,055
+│       ├── Test Accuracy: 90.45%
+│       ├── R² Score: 0.8887
+│       ├── MAE: $14,250
+│       └── RMSE: $20,343
 │
 ├── UI Layer
 │   ├── Streamlit Web Interface

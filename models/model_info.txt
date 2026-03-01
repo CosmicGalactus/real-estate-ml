@@ -1,8 +1,8 @@
 Real Estate Price Prediction Model
 ==================================================
-Accuracy: 90.81%
-Precision: 90.24%
-R² Score: 0.9024
-MAE: $13,614
-RMSE: $19,055
+Accuracy: 90.45%
+Precision: 88.87%
+R² Score: 0.8887
+MAE: $14,250
+RMSE: $20,343
 Features: 28
