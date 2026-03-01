@@ -1,0 +1,20 @@
+{
+  "model_name": "Advanced Ensemble ML Model",
+  "framework": "Scikit-Learn",
+  "train_mae": 8623.619130960325,
+  "train_rmse": 11307.081183228978,
+  "train_mape": 0.056402739632685724,
+  "train_r2": 0.9625781375538338,
+  "test_mae": 13614.371367406284,
+  "test_rmse": 19054.870386590315,
+  "test_mape": 0.09192628796210843,
+  "test_r2": 0.9023699764185419,
+  "accuracy": 90.80737120378916,
+  "precision": 90.23699764185419,
+  "cv_mean": 0.8788564841185347,
+  "cv_std": 0.029768285204176324,
+  "train_size": 2234,
+  "test_size": 559,
+  "num_features": 28,
+  "timestamp": "2026-03-01T22:58:17.717037"
+}
