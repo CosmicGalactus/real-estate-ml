@@ -137,3 +137,4 @@ Thumbs.db
 models/*.pkl
 *.csv
 !data/ames.csv
+video/

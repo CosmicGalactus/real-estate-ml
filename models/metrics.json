@@ -5,14 +5,14 @@
   "test_rmse": 21789.506516927697,
   "train_r2": 0.9800998941088659,
   "test_r2": 0.8998936506345744,
-  "test_mape": 0.0872875567986283,
+  "test_mape": 0.08728755679862832,
   "accuracy": 91.27124432013717,
   "precision": 89.98936506345744,
   "cv_mean": 0.8870595851316798,
   "cv_std": 0.014272622013885315,
   "train_size": 2296,
   "num_features": 21,
-  "timestamp": "2026-03-01T23:17:50.091353",
+  "timestamp": "2026-03-02T00:11:57.112082",
   "model_name": "Random Forest + Linear Regression Ensemble",
   "description": "Weighted voting ensemble (75% RF, 25% LR)"
 }
