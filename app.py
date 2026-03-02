@@ -205,7 +205,7 @@ with tab1:
             )
             total_bsmt_sf = st.number_input(
                 "🛋️ Basement Area (sq ft)",
-                min_value=0,
+                min_value=,
                 max_value=3500,
                 value=1000,
                 step=100
