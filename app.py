@@ -4,6 +4,13 @@ import numpy as np
 import joblib
 import json
 from datetime import datetime
+import sys
+from pathlib import Path
+
+# Add src to path for imports
+sys.path.insert(0, str(Path(__file__).parent / "src"))
+
+from advisory_ui import render_advisory_tab, render_how_it_works
 
 st.set_page_config(
     page_title="Real Estate Price Predictor",
@@ -183,7 +190,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-tab1, tab2, tab3 = st.tabs(["💰 Price Prediction", "📊 Model Performance", "ℹ️ About"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["💰 Price Prediction", "📊 Model Performance", "🤖 AI Advisory", "❓ How It Works", "ℹ️ About"])
 
 with tab1:
     st.markdown('<div class="section-title">Property Details</div>', unsafe_allow_html=True)
@@ -481,6 +488,8 @@ with tab2:
     """, unsafe_allow_html=True)
 
 with tab3:
+    render_advisory_tab()
+
     st.markdown('<div class="section-title">About This Model</div>', unsafe_allow_html=True)
     
     st.markdown("""
@@ -553,4 +562,16 @@ with tab3:
     - **Framework**: Scikit-Learn, Streamlit
     - **Python Version**: 3.8+
     """)
+
+with tab4:
+    render_how_it_works()
+
+with tab5:
+    st.markdown('<div class="section-title">About This Project</div>', unsafe_allow_html=True)
+    
+    st.markdown("""
+    This application is part of our Capstone Project on Intelligent Property Price Prediction 
+    and AI-driven real estate advisory.
+    """)
+
 
