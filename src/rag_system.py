@@ -20,8 +20,8 @@ enabling the agent to find relevant context without exact keyword matches.
 Example:
     >>> rag = RealEstateRAG()
     >>> initialize_sample_market_data(rag)
-    >>> insights = rag.retrieve_market_insights(\"Northridge property market\")
-\"\"\"
+    >>> insights = rag.retrieve_market_insights("Northridge property market")
+"""
 
 import chromadb
 from typing import List, Dict, Any, Optional
@@ -98,7 +98,7 @@ class RealEstateKnowledgeBase:
         
         Args:
             query: Natural language search query. Should describe what you're
-                   looking for (e.g., \"property appreciation in Northridge\")
+                   looking for (e.g., "property appreciation in Northridge")
             top_k: Number of results to return. Default 3.
             
         Returns:
@@ -109,9 +109,9 @@ class RealEstateKnowledgeBase:
                 - relevance: Similarity score (0-1, higher = more similar)
                 
         Example:
-            >>> results = kb.search(\"market conditions\", top_k=3)
+            >>> results = kb.search("market conditions", top_k=3)
             >>> for result in results:
-            ...     print(f\"{result['text']} (relevance: {result['relevance']})\")
+            ...     print(f"{result['text']} (relevance: {result['relevance']})")
         """
         try:
             results = self.market_data.query(

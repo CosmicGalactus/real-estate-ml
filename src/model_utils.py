@@ -15,8 +15,8 @@ Example:
     >>> predictor = ModelPredictor()
     >>> features = prepare_property_features(property_data)
     >>> price = predictor.predict(features)
-    >>> print(f\"Predicted price: ${price:,.0f}\")
-\"\"\"
+    >>> print(f"Predicted price: ${price:,.0f}")
+"""
 
 import os
 import json
@@ -150,7 +150,7 @@ def prepare_property_features(property_data):
         >>> raw_data = {"sqft": 2000, "bedrooms": 3}
         >>> features = prepare_property_features(raw_data)
         >>> price = predictor.predict(features)
-    \"\"\"
+    """
     features = {
         "sqft": property_data.get("sqft", 2000),
         "bedrooms": property_data.get("bedrooms", 3),

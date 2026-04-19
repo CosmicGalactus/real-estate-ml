@@ -324,7 +324,7 @@ class PropertyAdvisor:
         return "\n".join(analysis_points)
     
     def _assess_market_position(self, features: Dict) -> Dict:
-        \"\"\"Assess property's market positioning (REASONING TOOL #3).
+        """Assess property's market positioning (REASONING TOOL #3).
         
         This is the third reasoning step. It evaluates how the property positions
         relative to market conditions and opportunities:
@@ -341,34 +341,34 @@ class PropertyAdvisor:
                 - quality_rating: 1-10 quality score
                 - market_outlook: Market condition assessment
                 - investment_class: Property classification for investors
-        \"\"\"
-        neighborhood = features.get(\"neighborhood\", \"Unknown\")
-        quality = features.get(\"quality\", 5)
-        sqft = features.get(\"sqft\", 0)
-        beds = features.get(\"bedrooms\", 3)
+        """
+        neighborhood = features.get("neighborhood", "Unknown")
+        quality = features.get("quality", 5)
+        sqft = features.get("sqft", 0)
+        beds = features.get("bedrooms", 3)
         
         # Market outlook determination:
         # High quality (7+) in all aspects = Strong market conditions
         # Mixed quality = Stable but limited growth
         # Lower quality = Cautious (potential fixer-upper/value play)
-        market_outlook = \"Strong\" if quality >= 8 else (\"Stable\" if quality >= 6 else \"Cautious\")
+        market_outlook = "Strong" if quality >= 8 else ("Stable" if quality >= 6 else "Cautious")
         
         # Investment classification:
         # - Primary residence: 2-4 BR, medium quality, stable neighborhoods
         # - Investment/Rental: Higher yields expected
         # - Fix-and-Flip: Lower quality, discount pricing
         if quality >= 7 and 3 <= beds <= 4 and sqft > 1500:
-            investment_class = \"Primary Residence / Quality Home\"
+            investment_class = "Primary Residence / Quality Home"
         elif quality <= 5 and sqft > 1800:
-            investment_class = \"Fixer-Upper / Value Play\"
+            investment_class = "Fixer-Upper / Value Play"
         else:
-            investment_class = \"Investment/Rental Property\"
+            investment_class = "Investment/Rental Property"
         
         market_status = {
-            \"neighborhood\": neighborhood,
-            \"quality_rating\": quality,
-            \"market_outlook\": market_outlook,
-            \"investment_class\": investment_class
+            "neighborhood": neighborhood,
+            "quality_rating": quality,
+            "market_outlook": market_outlook,
+            "investment_class": investment_class
         }
         
         return market_status
@@ -377,7 +377,7 @@ class PropertyAdvisor:
                                                   price_validation: Dict,
                                                   market_position: Dict,
                                                   rag_insights: Optional[List[Dict]] = None) -> tuple:
-        \"\"\"Generate recommendation with confidence score (REASONING TOOL #4).
+        """Generate recommendation with confidence score (REASONING TOOL #4).
         
         This is the final reasoning step. It synthesizes all prior analysis into
         an investment recommendation with an associated confidence score (0-100%).
@@ -389,15 +389,15 @@ class PropertyAdvisor:
             
         Returns:
             Tuple of (recommendation_string, confidence_score 0-1)
-        \"\"\"
-        signal = price_validation.get(\"signal\", \"\")
-        quality = market_position.get(\"quality_rating\", 5)
-        deviation = abs(price_validation.get(\"deviation_percent\", 0))
+        """
+        signal = price_validation.get("signal", "")
+        quality = market_position.get("quality_rating", 5)
+        deviation = abs(price_validation.get("deviation_percent", 0))
         
         # Initialize base confidence from price signal
-        if \"REASONABLE\" in signal:
+        if "REASONABLE" in signal:
             base_confidence = 0.75
-        elif \"NEEDS REVIEW\" in signal:
+        elif "NEEDS REVIEW" in signal:
             base_confidence = 0.50
         else:
             base_confidence = 0.20
@@ -412,17 +412,17 @@ class PropertyAdvisor:
             combined_confidence = min(combined_confidence + insight_boost, 1.0)
         
         # Generate recommendation
-        if \"REASONABLE\" in signal and quality >= 6:
-            recommendation = \"🟢 BUY - Price is competitive and property quality is good\"
+        if "REASONABLE" in signal and quality >= 6:
+            recommendation = "🟢 BUY - Price is competitive and property quality is good"
             final_confidence = min(combined_confidence + 0.10, 1.0)
-        elif \"REASONABLE\" in signal:
-            recommendation = \"🟡 HOLD - Price is fair but consider property condition\"
+        elif "REASONABLE" in signal:
+            recommendation = "🟡 HOLD - Price is fair but consider property condition"
             final_confidence = combined_confidence
-        elif \"NEEDS REVIEW\" in signal:
-            recommendation = \"🟡 INVESTIGATE FURTHER - Price deviation requires expert review\"
+        elif "NEEDS REVIEW" in signal:
+            recommendation = "🟡 INVESTIGATE FURTHER - Price deviation requires expert review"
             final_confidence = combined_confidence
         else:
-            recommendation = \"🔴 CAUTION - Price seems unusual, review with professional\"
+            recommendation = "🔴 CAUTION - Price seems unusual, review with professional"
             final_confidence = combined_confidence * 0.8
         
         return recommendation, final_confidence
