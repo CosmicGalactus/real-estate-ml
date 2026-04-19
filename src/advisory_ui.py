@@ -111,8 +111,25 @@ def render_advisory_tab():
                 val = report["valuation"]
                 
                 # Handle both old (formatted) and new (numeric) valuation formats
-                pred_price = val.get("predicted_price_formatted") or f"${val.get('predicted_price', 0):,.0f}"
-                price_sqft = val.get("price_per_sqft_formatted") or f"${val.get('price_per_sqft', 0):,.0f}"
+                # Safe conversion function for numeric values
+                def safe_format_price(value, key_formatted):
+                    """Safely format a price value, handling strings and numbers."""
+                    try:
+                        # If formatted version exists, use it
+                        if key_formatted in val and val[key_formatted]:
+                            return val[key_formatted]
+                        # Try to convert to float and format
+                        numeric_val = float(value) if isinstance(value, str) else value
+                        return f"${numeric_val:,.0f}" if numeric_val else "$0"
+                    except:
+                        return "$0"
+                
+                pred_price_raw = val.get('predicted_price', val.get('predicted_price_formatted', 0))
+                price_sqft_raw = val.get('price_per_sqft', val.get('price_per_sqft_formatted', 0))
+                
+                pred_price = safe_format_price(pred_price_raw, 'predicted_price_formatted')
+                price_sqft = safe_format_price(price_sqft_raw, 'price_per_sqft_formatted')
+                
                 signal = val.get("signal", "N/A")
                 deviation = val.get("deviation", "N/A")
                 
@@ -140,9 +157,24 @@ def render_advisory_tab():
                 
                 col_metric1, col_metric2, col_metric3, col_metric4 = st.columns(4)
                 
-                # Get numeric values for calculations (handle both formats)
-                pred_price_numeric = val.get('predicted_price') or int(val.get('predicted_price_formatted', '$0').replace('$', '').replace(',', ''))
-                price_per_sqft_numeric = val.get('price_per_sqft') or float(val.get('price_per_sqft_formatted', '$0').replace('$', '').replace(',', '') or 0)
+                # Get numeric values for calculations (handle both formats) 
+                def extract_numeric(val_dict, numeric_key, formatted_key):
+                    """Extract numeric value, trying numeric key first, then parsing formatted."""
+                    try:
+                        raw = val_dict.get(numeric_key)
+                        if raw is not None and not isinstance(raw, str):
+                            return float(raw)
+                        # Try formatted version
+                        formatted = val_dict.get(formatted_key, "$0")
+                        if isinstance(formatted, str):
+                            cleaned = formatted.replace('$', '').replace(',', '')
+                            return float(cleaned) if cleaned else 0.0
+                        return float(formatted) if formatted else 0.0
+                    except:
+                        return 0.0
+                
+                pred_price_numeric = extract_numeric(val, 'predicted_price', 'predicted_price_formatted')
+                price_per_sqft_numeric = extract_numeric(val, 'price_per_sqft', 'price_per_sqft_formatted')
                 
                 with col_metric1:
                     st.metric("Price per Sqft", f"${price_per_sqft_numeric:,.0f}", 
