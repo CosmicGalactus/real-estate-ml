@@ -110,25 +110,29 @@ def render_advisory_tab():
                 st.markdown("### Estimate")
                 val = report["valuation"]
                 
-                # Handle both old (formatted) and new (numeric) valuation formats
-                # Safe conversion function for numeric values
-                def safe_format_price(value, key_formatted):
-                    """Safely format a price value, handling strings and numbers."""
-                    try:
-                        # If formatted version exists, use it
-                        if key_formatted in val and val[key_formatted]:
-                            return val[key_formatted]
-                        # Try to convert to float and format
-                        numeric_val = float(value) if isinstance(value, str) else value
-                        return f"${numeric_val:,.0f}" if numeric_val else "$0"
-                    except:
-                        return "$0"
+                # Extract price values - agent returns both numeric and formatted versions
+                try:
+                    # Try numeric first, then formatted
+                    if isinstance(val.get("predicted_price"), (int, float)):
+                        pred_price_val = val["predicted_price"]
+                        pred_price = f"${pred_price_val:,.0f}"
+                    else:
+                        pred_price = val.get("predicted_price_formatted", "$0")
+                        pred_price_val = 0
+                except:
+                    pred_price = "$0"
+                    pred_price_val = 0
                 
-                pred_price_raw = val.get('predicted_price', val.get('predicted_price_formatted', 0))
-                price_sqft_raw = val.get('price_per_sqft', val.get('price_per_sqft_formatted', 0))
-                
-                pred_price = safe_format_price(pred_price_raw, 'predicted_price_formatted')
-                price_sqft = safe_format_price(price_sqft_raw, 'price_per_sqft_formatted')
+                try:
+                    if isinstance(val.get("price_per_sqft"), (int, float)):
+                        price_sqft_val = val["price_per_sqft"]
+                        price_sqft = f"${price_sqft_val:,.0f}"
+                    else:
+                        price_sqft = val.get("price_per_sqft_formatted", "$0")
+                        price_sqft_val = 0
+                except:
+                    price_sqft = "$0"
+                    price_sqft_val = 0
                 
                 signal = val.get("signal", "N/A")
                 deviation = val.get("deviation", "N/A")
@@ -157,32 +161,21 @@ def render_advisory_tab():
                 
                 col_metric1, col_metric2, col_metric3, col_metric4 = st.columns(4)
                 
-                # Get numeric values for calculations (handle both formats) 
-                def extract_numeric(val_dict, numeric_key, formatted_key):
-                    """Extract numeric value, trying numeric key first, then parsing formatted."""
-                    try:
-                        raw = val_dict.get(numeric_key)
-                        if raw is not None and not isinstance(raw, str):
-                            return float(raw)
-                        # Try formatted version
-                        formatted = val_dict.get(formatted_key, "$0")
-                        if isinstance(formatted, str):
-                            cleaned = formatted.replace('$', '').replace(',', '')
-                            return float(cleaned) if cleaned else 0.0
-                        return float(formatted) if formatted else 0.0
-                    except:
-                        return 0.0
-                
-                pred_price_numeric = extract_numeric(val, 'predicted_price', 'predicted_price_formatted')
-                price_per_sqft_numeric = extract_numeric(val, 'price_per_sqft', 'price_per_sqft_formatted')
+                # Use the numeric values we already extracted
+                price_per_sqft_numeric = price_sqft_val if price_sqft_val > 0 else (sqft / 1 if sqft else 1)
+                pred_price_numeric = pred_price_val if pred_price_val > 0 else 300000  # reasonable default
                 
                 with col_metric1:
                     st.metric("Price per Sqft", f"${price_per_sqft_numeric:,.0f}", 
                               delta="Market aligned" if quality_factor > 0.5 else "Below market")
                 with col_metric2:
                     estimated_rent = pred_price_numeric * 0.007  # 7% annual rental yield estimate
-                    st.metric("Est. Annual Rent", f"${estimated_rent:,.0f}", 
-                              delta=f"{estimated_rent/pred_price_numeric*100:.1f}% yield")
+                    try:
+                        yield_pct = (estimated_rent / pred_price_numeric * 100) if pred_price_numeric > 0 else 0
+                        st.metric("Est. Annual Rent", f"${estimated_rent:,.0f}", 
+                                  delta=f"{yield_pct:.1f}% yield")
+                    except:
+                        st.metric("Est. Annual Rent", f"${estimated_rent:,.0f}")
                 with col_metric3:
                     st.metric("Property Age", f"{house_age} years",
                               delta="Well maintained" if condition >= 7 else "Renovation needed")
@@ -194,6 +187,7 @@ def render_advisory_tab():
                 # Market position analysis
                 st.markdown("### 🎯 Market Position Analysis")
                 
+                # Use the extracted numeric values for market insights
                 market_insights = f"""
                 **Price Assessment**: 
                 - Predicted value: {pred_price}
@@ -202,14 +196,14 @@ def render_advisory_tab():
                 
                 **Property Characteristics**:
                 - {bedrooms}-bedroom, {bathrooms}-bathroom property
-                - {sqft:,} sqft living space (${price_per_sqft_numeric:,.0f}/sqft)
+                - {sqft:,} sqft living space ({f"${price_per_sqft_numeric:,.0f}/sqft" if price_per_sqft_numeric > 0 else "N/A"})
                 - Built in {year_built} ({house_age} years old)
                 - Quality: {quality}/10 | Condition: {condition}/10
                 - Located in {neighborhood} neighborhood
                 
                 **Investment Potential**:
                 - Estimated annual rental income: ~${estimated_rent:,.0f}
-                - Rental yield estimate: ~{estimated_rent/pred_price_numeric*100:.1f}% annually
+                - Rental yield estimate: ~{(estimated_rent/pred_price_numeric*100) if pred_price_numeric > 0 else 0:.1f}% annually
                 - {neighborhood} neighborhood trend: Growing demand for investment properties
                 - Quality-condition composite: {quality_score:.1f}/10 indicates {"premium marketability" if quality_score >= 7 else "standard market appeal"}
                 
