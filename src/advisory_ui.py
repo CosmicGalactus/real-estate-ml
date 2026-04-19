@@ -120,20 +120,88 @@ def render_advisory_tab():
                 with col_v4:
                     st.metric("Signal", val["signal"])
                 
-                # Property analysis
-                st.markdown("### Property Analysis")
+                # Property analysis with detailed insights
+                st.markdown("### 🏘️ Detailed Property Analysis")
                 st.markdown(report["analysis"])
                 
+                # Enhanced analysis metrics
+                st.markdown("### 📈 Investment Metrics")
+                
+                # Calculate additional metrics for analysis
+                house_age = 2026 - year_built
+                price_per_sqft = val['predicted_price'] / sqft
+                quality_factor = quality * condition / 100
+                
+                col_metric1, col_metric2, col_metric3, col_metric4 = st.columns(4)
+                
+                with col_metric1:
+                    st.metric("Price per Sqft", f"${price_per_sqft:,.0f}", 
+                              delta="Market aligned" if quality_factor > 0.5 else "Below market")
+                with col_metric2:
+                    estimated_rent = val['predicted_price'] * 0.007  # 7% annual rental yield estimate
+                    st.metric("Est. Annual Rent", f"${estimated_rent:,.0f}", 
+                              delta=f"{estimated_rent/val['predicted_price']*100:.1f}% yield")
+                with col_metric3:
+                    st.metric("Property Age", f"{house_age} years",
+                              delta="Well maintained" if condition >= 7 else "Renovation needed")
+                with col_metric4:
+                    quality_score = (quality + condition) / 2
+                    st.metric("Quality Score", f"{quality_score:.1f}/10",
+                              delta="Premium" if quality_score >= 7 else "Standard")
+                
+                # Market position analysis
+                st.markdown("### 🎯 Market Position Analysis")
+                
+                market_insights = f"""
+                **Price Assessment**: 
+                - Predicted value: ${val['predicted_price']:,.0f}
+                - Price per sqft: ${price_per_sqft:,.0f}
+                - Quality alignment: {val['signal']}
+                
+                **Property Characteristics**:
+                - {bedrooms}-bedroom, {bathrooms}-bathroom property
+                - {sqft:,} sqft living space (${price_per_sqft:,.0f}/sqft)
+                - Built in {year_built} ({house_age} years old)
+                - Quality: {quality}/10 | Condition: {condition}/10
+                - Located in {neighborhood} neighborhood
+                
+                **Investment Potential**:
+                - Estimated annual rental income: ~${estimated_rent:,.0f}
+                - Rental yield estimate: ~{estimated_rent/val['predicted_price']*100:.1f}% annually
+                - {neighborhood} neighborhood trend: Growing demand for investment properties
+                - Quality-condition composite: {quality_score:.1f}/10 indicates {"premium marketability" if quality_score >= 7 else "standard market appeal"}
+                
+                **Key Value Drivers**:
+                """
+                
+                if sqft > 2500:
+                    market_insights += "- ✓ Spacious property attracts larger families\n"
+                if quality >= 8:
+                    market_insights += "- ✓ High quality commands premium in market\n"
+                if house_age < 10:
+                    market_insights += "- ✓ Newer property requires less maintenance\n"
+                if garage_cars >= 2:
+                    market_insights += "- ✓ Multiple car garage increases desirability\n"
+                
+                if house_age > 50:
+                    market_insights += "- ⚠ Aging infrastructure may require upgrades\n"
+                if condition < 6:
+                    market_insights += "- ⚠ Below-average condition needs attention\n"
+                if quality < 6:
+                    market_insights += "- ⚠ Standard quality may limit buyer pool\n"
+                
+                st.markdown(market_insights)
+                
                 # Recommendation
-                st.markdown("### Investment Recommendation")
+                st.markdown("### 💡 Investment Recommendation")
                 
                 rec = report["recommendation"]
                 if "BUY" in rec:
-                    st.success(rec)
+                    st.success(f"✅ **RECOMMENDATION: BUY**\n\n{rec}")
                 elif "INVESTIGATE" in rec:
-                    st.warning(rec)
+                    st.warning(f"⚠️ **RECOMMENDATION: INVESTIGATE**\n\n{rec}")
                 else:
-                    st.info(rec)
+                    st.info(f"ℹ️ **RECOMMENDATION: HOLD**\n\n{rec}")
                 
                 # Disclaimer
                 st.markdown("### Legal Notice")

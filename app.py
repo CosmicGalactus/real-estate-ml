@@ -110,6 +110,7 @@ st.markdown("""
         border-radius: 10px;
         margin: 15px 0;
         border-left: 5px solid #667eea;
+        color: #1a1a1a;
     }
     
     .success-box {
@@ -570,8 +571,154 @@ with tab5:
     st.markdown('<div class="section-title">About This Project</div>', unsafe_allow_html=True)
     
     st.markdown("""
-    This application is part of our Capstone Project on Intelligent Property Price Prediction 
-    and AI-driven real estate advisory.
-    """)
+    ## 🏡 Real Estate ML: Intelligent Property Valuation & Advisory
+    
+    This application is a comprehensive capstone project on intelligent property price prediction 
+    and AI-driven real estate advisory. It combines machine learning, data analysis, and artificial 
+    intelligence to provide investors and homebuyers with data-driven property insights.
+    
+    ---
+    
+    ### 🎯 Project Overview
+    
+    **Purpose**: Predict residential property values accurately and provide intelligent investment 
+    recommendations through an AI advisory system that analyzes market trends and property characteristics.
+    
+    **Technology Stack**:
+    - **Frontend**: Streamlit (interactive web interface)
+    - **ML Framework**: Scikit-Learn + Ensemble methods
+    - **AI Research**: LangGraph-inspired agentic reasoning patterns
+    - **Vector Database**: Chroma (for RAG-based market insights)
+    - **Data Processing**: Pandas, NumPy, Scikit-learn Pipeline
+    
+    ---
+    
+    ### 💰 How to Use This Tool
+    
+    **Tab 1: Price Prediction**
+    - Enter property details (size, condition, location, etc.)
+    - Click "Predict Price" to get an ML-based valuation
+    - Review the prediction accuracy metrics
+    - Perfect for quick price estimates
+    
+    **Tab 2: Model Performance**
+    - View detailed ML model metrics and performance
+    - Understand accuracy, precision, and error rates
+    - Learn about training data composition
+    - Great for technical users wanting model details
+    
+    **Tab 3: AI Advisory**
+    - Get intelligent property investment recommendations
+    - Analyze market position and ROI potential
+    - Multi-step reasoning with confidence scores
+    - Transparency into how recommendations are made
+    
+    **Tab 4: How It Works**
+    - Understand the advisory analysis process
+    - Learn about quality assurance measures
+    - Interpret different signals and recommendations
+    - Best practices for accurate analysis
+    
+    ---
+    
+    ### 🤖 AI Advisory Agent Features
+    
+    ✅ **Multi-Step Reasoning**: Property validation → Analysis → Market positioning → Recommendations
+    
+    ✅ **Confidence Scoring**: Each recommendation includes a 0-100% confidence score based on data quality
+    
+    ✅ **RAG Integration**: Retrieves relevant market insights for context-aware analysis
+    
+    ✅ **Transparent Logic**: Full reasoning history shows exactly how recommendations are generated
+    
+    ✅ **Risk Assessment**: Identifies market anomalies and flags concerns for further investigation
+    
+    ---
+    
+    ### 📊 Model Accuracy & Validation
+    
+    The underlying ML model was trained on 2,870 residential properties from the Ames Housing Dataset 
+    and achieves:
+    - **Accuracy**: {0:.2f}%
+    - **R² Score**: {1:.4f}
+    - **MAE**: ${2:,.0f} (average prediction error)
+    - **Test RMSE**: ${3:,.0f}
+    
+    The model uses **Random Forest (500 estimators)** with Ridge Regression voting ensemble for 
+    optimal predictions across diverse property types.
+    
+    ---
+    
+    ### 🔄 Key Features
+    
+    **1. Comprehensive Property Analysis**
+    - 21 engineered features capturing property essence
+    - Quality-to-area ratio, age, condition, location factors
+    - Neighborhood-specific insights
+    
+    **2. Market-Aware Pricing**
+    - Compares individual properties to market comparables
+    - Identifies undervalued and overvalued properties
+    - Provides investment signals for decision-making
+    
+    **3. Investment Recommendations**
+    - BUY: Competitively priced, good quality
+    - HOLD: Fair price, review condition
+    - INVESTIGATE: Unusual pricing, research further
+    
+    **4. Data Privacy & Security**
+    - No data storage or tracking
+    - All analysis happens client-side
+    - No personal information collection
+    
+    ---
+    
+    ### 📈 Use Cases
+    
+    🏠 **Homebuyers**: Verify asking prices are reasonable before making offers
+    
+    💼 **Investors**: Identify undervalued rental properties with ROI potential
+    
+    🏘️ **Real Estate Agents**: Support pricing decisions with data-driven insights
+    
+    📊 **Analysts**: Understand property valuation patterns and market trends
+    
+    ---
+    
+    ### ⚖️ Important Disclaimers
+    
+    ⚠️ **This tool is for informational purposes only** and should not be considered professional 
+    financial or legal advice. Always consult with qualified real estate professionals before making 
+    property investment decisions.
+    
+    ✓ Predictions are based on historical data patterns and may not account for:
+    - Recent market changes or economic conditions
+    - Unique property characteristics or renovations
+    - Local regulations or zoning changes
+    - Individual buyer preferences or circumstances
+    
+    ---
+    
+    ### 📚 Technical Resources
+    
+    - **GitHub Repository**: [CosmicGalactus/real-estate-ml](https://github.com/CosmicGalactus/real-estate-ml)
+    - **Dataset**: Ames Housing Dataset (kaggle.com/c/house-prices-advanced-regression-techniques)
+    - **Framework**: [Streamlit Documentation](https://docs.streamlit.io)
+    - **ML Framework**: [Scikit-Learn](https://scikit-learn.org)
+    
+    ---
+    
+    ### 👨‍💼 About the Project
+    
+    This project demonstrates advanced AI/ML capabilities including:
+    - Ensemble machine learning architectures
+    - Agentic AI patterns with multi-step reasoning
+    - RAG (Retrieval-Augmented Generation) systems
+    - Production-ready Streamlit applications
+    - Professional code documentation and best practices
+    
+    Built with focus on transparency, accuracy, and user experience.
+    """.format(metrics['accuracy'], metrics['test_r2'], metrics['test_mae'], metrics['test_rmse']))
+
 
 
