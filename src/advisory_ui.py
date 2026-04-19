@@ -164,29 +164,25 @@ def render_advisory_tab():
                 st.markdown("### Estimate")
                 val = report["valuation"]
                 
-                # Extract price values - agent returns both numeric and formatted versions
-                try:
-                    # Try numeric first, then formatted
-                    if isinstance(val.get("predicted_price"), (int, float)):
-                        pred_price_val = val["predicted_price"]
-                        pred_price = f"${pred_price_val:,.0f}"
-                    else:
-                        pred_price = val.get("predicted_price_formatted", "$0")
-                        pred_price_val = 0
-                except:
-                    pred_price = "$0"
-                    pred_price_val = 0
+                # Helper function to safely extract numeric value
+                def to_float(val):
+                    """Convert any value to float, handling strings, None, etc."""
+                    try:
+                        if isinstance(val, (int, float)):
+                            return float(val)
+                        if isinstance(val, str):
+                            return float(val.replace('$', '').replace(',', ''))
+                        return 0.0
+                    except:
+                        return 0.0
                 
-                try:
-                    if isinstance(val.get("price_per_sqft"), (int, float)):
-                        price_sqft_val = val["price_per_sqft"]
-                        price_sqft = f"${price_sqft_val:,.0f}"
-                    else:
-                        price_sqft = val.get("price_per_sqft_formatted", "$0")
-                        price_sqft_val = 0
-                except:
-                    price_sqft = "$0"
-                    price_sqft_val = 0
+                # Extract numeric values from valuation dict
+                pred_price_val = to_float(val.get("predicted_price"))
+                price_sqft_val = to_float(val.get("price_per_sqft"))
+                
+                # Format for display
+                pred_price = f"${pred_price_val:,.0f}" if pred_price_val > 0 else "$0"
+                price_sqft = f"${price_sqft_val:,.0f}" if price_sqft_val > 0 else "$0"
                 
                 signal = val.get("signal", "N/A")
                 deviation = val.get("deviation", "N/A")
@@ -216,8 +212,13 @@ def render_advisory_tab():
                 col_metric1, col_metric2, col_metric3, col_metric4 = st.columns(4)
                 
                 # Use the numeric values we already extracted
-                price_per_sqft_numeric = price_sqft_val if price_sqft_val > 0 else (sqft / 1 if sqft else 1)
-                pred_price_numeric = pred_price_val if pred_price_val > 0 else 300000  # reasonable default
+                # If price_per_sqft is 0, calculate it from predicted_price and sqft
+                if price_sqft_val <= 0 and pred_price_val > 0 and sqft > 0:
+                    price_per_sqft_numeric = pred_price_val / sqft
+                else:
+                    price_per_sqft_numeric = price_sqft_val
+                    
+                pred_price_numeric = pred_price_val if pred_price_val > 0 else 300000
                 
                 with col_metric1:
                     st.metric("Price per Sqft", f"${price_per_sqft_numeric:,.0f}", 
