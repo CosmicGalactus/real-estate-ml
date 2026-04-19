@@ -6,6 +6,8 @@ Simple and straightforward interface for property analysis
 import streamlit as st
 import sys
 from pathlib import Path
+import pandas as pd
+import joblib
 
 sys.path.insert(0, str(Path(__file__).parent))
 
@@ -16,6 +18,16 @@ from agent import PropertyAdvisor
 def get_advisor():
     """Create advisor instance (cached)"""
     return PropertyAdvisor()
+
+
+@st.cache_resource
+def load_model():
+    """Load the ML model for predictions"""
+    try:
+        model = joblib.load("models/model.pkl")
+        return model
+    except FileNotFoundError:
+        return None
 
 
 def render_advisory_tab():
@@ -81,7 +93,49 @@ def render_advisory_tab():
     
     if st.button("📊 Analyze Property", use_container_width=True, type="primary"):
         with st.spinner("Analyzing..."):
-            # Prepare data
+            # Get ML model prediction for the property
+            model = load_model()
+            predicted_price = 300000  # fallback default
+            
+            if model:
+                try:
+                    # Prepare input in same format as Price Prediction tab
+                    house_age = 2026 - year_built
+                    quality_area = quality * sqft
+                    quality_cond_score = quality * condition
+                    total_floor = (sqft * 0.7) + (sqft * 0.3)  # rough estimate
+                    garage_area = garage_cars * 250  # ~250 sqft per car
+                    
+                    input_df = pd.DataFrame({
+                        'Gr Liv Area': [sqft],
+                        'Total Bsmt SF': [sqft * 0.5],
+                        '1st Flr SF': [sqft * 0.7],
+                        'Garage Area': [garage_area],
+                        'Lot Area': [10000],
+                        'Overall Qual': [quality],
+                        'Overall Cond': [condition],
+                        'Year Built': [year_built],
+                        'House_Age': [house_age],
+                        'Bedroom AbvGr': [bedrooms],
+                        'Full Bath': [condition >= 7],  # 1 if well maintained
+                        'Half Bath': [0],
+                        'Kitchen AbvGr': [1],
+                        'TotRms AbvGrd': [bedrooms + condition + 3],
+                        'Garage Cars': [garage_cars],
+                        'Quality_Area': [quality_area],
+                        'Quality_Condition_Score': [quality_cond_score],
+                        'Total_Floor_Area': [total_floor],
+                        'Neighborhood': [neighborhood],
+                        'Bldg Type': ['1Fam'],
+                        'House Style': ['2Story']
+                    })
+                    
+                    predicted_price = model.predict(input_df)[0]
+                except Exception as e:
+                    st.warning(f"⚠️ Could not use ML model: {str(e)[:50]}. Using default estimate.")
+                    predicted_price = 300000 + (sqft * 100) + (quality * 5000)
+            
+            # Prepare data for advisor
             property_data = {
                 "features": {
                     "address": address,
@@ -94,7 +148,7 @@ def render_advisory_tab():
                     "condition": condition,
                     "garage_cars": garage_cars
                 },
-                "predicted_price": 300000 + (sqft * 100) + (quality * 5000)
+                "predicted_price": predicted_price
             }
             
             # Get analysis
