@@ -110,37 +110,47 @@ def render_advisory_tab():
                 st.markdown("### Estimate")
                 val = report["valuation"]
                 
+                # Handle both old (formatted) and new (numeric) valuation formats
+                pred_price = val.get("predicted_price_formatted") or f"${val.get('predicted_price', 0):,.0f}"
+                price_sqft = val.get("price_per_sqft_formatted") or f"${val.get('price_per_sqft', 0):,.0f}"
+                signal = val.get("signal", "N/A")
+                deviation = val.get("deviation", "N/A")
+                
                 col_v1, col_v2, col_v3, col_v4 = st.columns(4)
                 with col_v1:
-                    st.metric("Predicted Price", val["predicted_price_formatted"])
+                    st.metric("Predicted Price", pred_price)
                 with col_v2:
-                    st.metric("Price/Sqft", val["price_per_sqft_formatted"])
+                    st.metric("Price/Sqft", price_sqft)
                 with col_v3:
-                    st.metric("Deviation", val["deviation"])
+                    st.metric("Deviation", deviation)
                 with col_v4:
-                    st.metric("Signal", val["signal"])
+                    st.metric("Signal", signal)
                 
                 # Property analysis with detailed insights
                 st.markdown("### 🏘️ Detailed Property Analysis")
-                st.markdown(report["analysis"])
+                analysis_text = report.get("property_analysis") or report.get("analysis", "No analysis available")
+                st.markdown(analysis_text)
                 
                 # Enhanced analysis metrics
                 st.markdown("### 📈 Investment Metrics")
                 
                 # Calculate additional metrics for analysis
                 house_age = 2026 - year_built
-                price_per_sqft = val['predicted_price'] / sqft
                 quality_factor = quality * condition / 100
                 
                 col_metric1, col_metric2, col_metric3, col_metric4 = st.columns(4)
                 
+                # Get numeric values for calculations (handle both formats)
+                pred_price_numeric = val.get('predicted_price') or int(val.get('predicted_price_formatted', '$0').replace('$', '').replace(',', ''))
+                price_per_sqft_numeric = val.get('price_per_sqft') or float(val.get('price_per_sqft_formatted', '$0').replace('$', '').replace(',', '') or 0)
+                
                 with col_metric1:
-                    st.metric("Price per Sqft", f"${price_per_sqft:,.0f}", 
+                    st.metric("Price per Sqft", f"${price_per_sqft_numeric:,.0f}", 
                               delta="Market aligned" if quality_factor > 0.5 else "Below market")
                 with col_metric2:
-                    estimated_rent = val['predicted_price'] * 0.007  # 7% annual rental yield estimate
+                    estimated_rent = pred_price_numeric * 0.007  # 7% annual rental yield estimate
                     st.metric("Est. Annual Rent", f"${estimated_rent:,.0f}", 
-                              delta=f"{estimated_rent/val['predicted_price']*100:.1f}% yield")
+                              delta=f"{estimated_rent/pred_price_numeric*100:.1f}% yield")
                 with col_metric3:
                     st.metric("Property Age", f"{house_age} years",
                               delta="Well maintained" if condition >= 7 else "Renovation needed")
@@ -154,20 +164,20 @@ def render_advisory_tab():
                 
                 market_insights = f"""
                 **Price Assessment**: 
-                - Predicted value: {val['predicted_price_formatted']}
-                - Price per sqft: {val['price_per_sqft_formatted']}
-                - Quality alignment: {val['signal']}
+                - Predicted value: {pred_price}
+                - Price per sqft: {price_sqft}
+                - Quality alignment: {signal}
                 
                 **Property Characteristics**:
                 - {bedrooms}-bedroom, {bathrooms}-bathroom property
-                - {sqft:,} sqft living space (${price_per_sqft:,.0f}/sqft)
+                - {sqft:,} sqft living space (${price_per_sqft_numeric:,.0f}/sqft)
                 - Built in {year_built} ({house_age} years old)
                 - Quality: {quality}/10 | Condition: {condition}/10
                 - Located in {neighborhood} neighborhood
                 
                 **Investment Potential**:
                 - Estimated annual rental income: ~${estimated_rent:,.0f}
-                - Rental yield estimate: ~{estimated_rent/val['predicted_price']*100:.1f}% annually
+                - Rental yield estimate: ~{estimated_rent/pred_price_numeric*100:.1f}% annually
                 - {neighborhood} neighborhood trend: Growing demand for investment properties
                 - Quality-condition composite: {quality_score:.1f}/10 indicates {"premium marketability" if quality_score >= 7 else "standard market appeal"}
                 
@@ -195,7 +205,7 @@ def render_advisory_tab():
                 # Recommendation
                 st.markdown("### 💡 Investment Recommendation")
                 
-                rec = report["recommendation"]
+                rec = report.get("recommendation", "Unable to generate recommendation")
                 if "BUY" in rec:
                     st.success(f"✅ **RECOMMENDATION: BUY**\n\n{rec}")
                 elif "INVESTIGATE" in rec:
@@ -205,7 +215,8 @@ def render_advisory_tab():
                 
                 # Disclaimer
                 st.markdown("### Legal Notice")
-                st.info(report["disclaimer"])
+                disclaimer = report.get("disclaimer", "This is for informational purposes only.")
+                st.info(disclaimer)
                 
                 # Export options
                 st.markdown("---")
