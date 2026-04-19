@@ -461,10 +461,13 @@ class PropertyAdvisor:
                 "quality_rating": f"{features.get('quality', 5)}/10"
             },
             "valuation": {
-                "predicted_price": f"${validation['predicted_price']:,}",
-                "price_per_sqft": f"${validation['price_per_sqft']}",
+                "predicted_price": validation['predicted_price'],
+                "predicted_price_formatted": f"${validation['predicted_price']:,}",
+                "price_per_sqft": validation['price_per_sqft'],
+                "price_per_sqft_formatted": f"${validation['price_per_sqft']}",
                 "expected_range": f"${validation['expected_price'] * 0.95:,.0f} - ${validation['expected_price'] * 1.05:,.0f}",
-                "validation_signal": validation["signal"]
+                "signal": validation["signal"],
+                "deviation": f"{((validation['predicted_price'] - validation['expected_price']) / validation['expected_price'] * 100):.1f}%"
             },
             "property_analysis": state.analysis,
             "market_position": market,

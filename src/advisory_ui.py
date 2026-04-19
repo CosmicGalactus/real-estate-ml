@@ -112,9 +112,9 @@ def render_advisory_tab():
                 
                 col_v1, col_v2, col_v3, col_v4 = st.columns(4)
                 with col_v1:
-                    st.metric("Predicted Price", val["predicted_price"])
+                    st.metric("Predicted Price", val["predicted_price_formatted"])
                 with col_v2:
-                    st.metric("Price/Sqft", val["price_per_sqft"])
+                    st.metric("Price/Sqft", val["price_per_sqft_formatted"])
                 with col_v3:
                     st.metric("Deviation", val["deviation"])
                 with col_v4:
@@ -154,8 +154,8 @@ def render_advisory_tab():
                 
                 market_insights = f"""
                 **Price Assessment**: 
-                - Predicted value: ${val['predicted_price']:,.0f}
-                - Price per sqft: ${price_per_sqft:,.0f}
+                - Predicted value: {val['predicted_price_formatted']}
+                - Price per sqft: {val['price_per_sqft_formatted']}
                 - Quality alignment: {val['signal']}
                 
                 **Property Characteristics**:
