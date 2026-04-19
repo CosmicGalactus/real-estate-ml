@@ -101,15 +101,7 @@ def render_advisory_tab():
             advisor = get_advisor()
             report = advisor.analyze(property_data)
             
-            # Debug: Show what we got back
-            if report.get("status") == "success":
-                val = report.get("valuation", {})
-                # Add debug info to see structure
-                st.write(f"DEBUG - Valuation keys: {list(val.keys())}")
-                st.write(f"DEBUG - predicted_price value: {val.get('predicted_price')} (type: {type(val.get('predicted_price'))})")
-                st.write(f"DEBUG - predicted_price_formatted: {val.get('predicted_price_formatted')}")
-            
-            if report.get("status") == "success":
+            if report and isinstance(report, dict) and "valuation" in report:
                 # Display results
                 st.markdown("---")
                 st.markdown("## 📋 Analysis Results")
