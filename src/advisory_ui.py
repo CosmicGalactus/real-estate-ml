@@ -12,6 +12,40 @@ import joblib
 sys.path.insert(0, str(Path(__file__).parent))
 
 from agent import PropertyAdvisor
+from config import (
+    MODEL_FILE,
+    NEIGHBORHOODS,
+    SQFT_MIN,
+    SQFT_MAX,
+    SQFT_DEFAULT,
+    SQFT_STEP,
+    BEDROOMS_MIN,
+    BEDROOMS_MAX,
+    BEDROOMS_DEFAULT,
+    BATHROOMS_MIN,
+    BATHROOMS_MAX,
+    BATHROOMS_DEFAULT,
+    GARAGE_CARS_MIN,
+    GARAGE_CARS_MAX,
+    GARAGE_CARS_DEFAULT,
+    QUALITY_MIN,
+    QUALITY_MAX,
+    QUALITY_DEFAULT,
+    CONDITION_MIN,
+    CONDITION_MAX,
+    CONDITION_DEFAULT,
+    YEAR_BUILT_MIN,
+    YEAR_BUILT_MAX,
+    YEAR_BUILT_DEFAULT,
+    CURRENT_YEAR,
+    INVESTMENT_TYPES,
+    BASEMENT_RATIO_MULTIPLIER,
+    FLOOR_UPPER_RATIO,
+    GARAGE_SQFT_PER_CAR,
+    LOT_AREA_DEFAULT,
+    BLDG_TYPE_DEFAULT,
+    HOUSE_STYLE_DEFAULT,
+)
 
 
 @st.cache_resource
@@ -24,7 +58,7 @@ def get_advisor():
 def load_model():
     """Load the ML model for predictions"""
     try:
-        model = joblib.load("models/model.pkl")
+        model = joblib.load(str(MODEL_FILE))
         return model
     except FileNotFoundError:
         return None
@@ -53,28 +87,50 @@ def render_advisory_tab():
         with col1:
             address = st.text_input("Address", "500 Main St")
             sqft = st.number_input(
-                "Square Feet", min_value=500, max_value=6000, value=2000, step=100
+                "Square Feet",
+                min_value=SQFT_MIN,
+                max_value=SQFT_MAX,
+                value=SQFT_DEFAULT,
+                step=SQFT_STEP,
             )
             bedrooms = st.number_input(
-                "Bedrooms", min_value=1, max_value=6, value=3, step=1
+                "Bedrooms",
+                min_value=BEDROOMS_MIN,
+                max_value=BEDROOMS_MAX,
+                value=BEDROOMS_DEFAULT,
+                step=1,
             )
 
         with col2:
-            neighborhood = st.selectbox(
-                "Neighborhood", ["Northridge", "Westside", "Downtown", "Suburbs"]
-            )
+            neighborhood = st.selectbox("Neighborhood", NEIGHBORHOODS)
             year_built = st.number_input(
-                "Year Built", min_value=1800, max_value=2026, value=2005, step=1
+                "Year Built",
+                min_value=YEAR_BUILT_MIN,
+                max_value=YEAR_BUILT_MAX,
+                value=YEAR_BUILT_DEFAULT,
+                step=1,
             )
             bathrooms = st.number_input(
-                "Bathrooms", min_value=1, max_value=5, value=2, step=1
+                "Bathrooms",
+                min_value=BATHROOMS_MIN,
+                max_value=BATHROOMS_MAX,
+                value=BATHROOMS_DEFAULT,
+                step=1,
             )
 
         with col3:
-            quality = st.slider("Quality (1-10)", 1, 10, 7)
-            condition = st.slider("Condition (1-10)", 1, 10, 7)
+            quality = st.slider(
+                "Quality (1-10)", QUALITY_MIN, QUALITY_MAX, QUALITY_DEFAULT
+            )
+            condition = st.slider(
+                "Condition (1-10)", CONDITION_MIN, CONDITION_MAX, CONDITION_DEFAULT
+            )
             garage_cars = st.number_input(
-                "Garage Cars", min_value=0, max_value=4, value=2, step=1
+                "Garage Cars",
+                min_value=GARAGE_CARS_MIN,
+                max_value=GARAGE_CARS_MAX,
+                value=GARAGE_CARS_DEFAULT,
+                step=1,
             )
 
         st.markdown("---")
@@ -82,9 +138,7 @@ def render_advisory_tab():
 
         col_inv1, col_inv2 = st.columns(2)
         with col_inv1:
-            investment_type = st.radio(
-                "Investment Type", ["Buy to Live", "Rental", "Flip"]
-            )
+            investment_type = st.radio("Investment Type", INVESTMENT_TYPES)
         with col_inv2:
             risk = st.select_slider("Risk Tolerance", ["Low", "Medium", "High"])
 
@@ -99,7 +153,7 @@ def render_advisory_tab():
         
         **Quality:** {quality}/10
         
-        **Age:** {2026 - year_built} years
+        **Age:** {CURRENT_YEAR - year_built} years
         """)
 
     # Analyze button
@@ -114,19 +168,21 @@ def render_advisory_tab():
             if model:
                 try:
                     # Prepare input in same format as Price Prediction tab
-                    house_age = 2026 - year_built
+                    house_age = CURRENT_YEAR - year_built
                     quality_area = quality * sqft
                     quality_cond_score = quality * condition
-                    total_floor = (sqft * 0.7) + (sqft * 0.3)  # rough estimate
-                    garage_area = garage_cars * 250  # ~250 sqft per car
+                    total_floor = (sqft * (1 - FLOOR_UPPER_RATIO)) + (
+                        sqft * FLOOR_UPPER_RATIO
+                    )  # rough estimate
+                    garage_area = garage_cars * GARAGE_SQFT_PER_CAR  # sqft per car
 
                     input_df = pd.DataFrame(
                         {
                             "Gr Liv Area": [sqft],
-                            "Total Bsmt SF": [sqft * 0.5],
-                            "1st Flr SF": [sqft * 0.7],
+                            "Total Bsmt SF": [sqft * BASEMENT_RATIO_MULTIPLIER],
+                            "1st Flr SF": [sqft * (1 - FLOOR_UPPER_RATIO)],
                             "Garage Area": [garage_area],
-                            "Lot Area": [10000],
+                            "Lot Area": [LOT_AREA_DEFAULT],
                             "Overall Qual": [quality],
                             "Overall Cond": [condition],
                             "Year Built": [year_built],
@@ -141,8 +197,8 @@ def render_advisory_tab():
                             "Quality_Condition_Score": [quality_cond_score],
                             "Total_Floor_Area": [total_floor],
                             "Neighborhood": [neighborhood],
-                            "Bldg Type": ["1Fam"],
-                            "House Style": ["2Story"],
+                            "Bldg Type": [BLDG_TYPE_DEFAULT],
+                            "House Style": [HOUSE_STYLE_DEFAULT],
                         }
                     )
 
