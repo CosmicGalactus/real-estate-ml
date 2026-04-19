@@ -1,28 +1,53 @@
-"""
-Simple RAG System for Real Estate Market Data
-Uses Chroma for storing and retrieving market information
-"""
+"""RAG System for Real Estate Market Knowledge Base
+
+This module implements a Retrieval-Augmented Generation (RAG) system using
+Chroma vector database for semantic search over market knowledge. The RAG
+system enables the agent to retrieve relevant market context for property
+analysis.
+
+Key Classes:
+    - RealEstateKnowledgeBase: Core RAG with semantic search
+    - RealEstateRAG: Backward-compatible wrapper
+
+The system stores:
+    1. Market trends (neighborhood conditions, appreciation trends)
+    2. Comparable properties (recent sales with prices and features)
+    3. Regulations (local real estate rules)
+
+All documents are embedded and indexed for semantic similarity search,
+enabling the agent to find relevant context without exact keyword matches.
+
+Example:
+    >>> rag = RealEstateRAG()
+    >>> initialize_sample_market_data(rag)
+    >>> insights = rag.retrieve_market_insights(\"Northridge property market\")
+\"\"\"
 
 import chromadb
 from typing import List, Dict, Any, Optional
 
 
 class RealEstateKnowledgeBase:
-    """
-    Stores and retrieves real estate market information.
-    Keeps a collection of market data, comparable properties, and rules.
+    """Stores and retrieves real estate market information using Chroma.
+    
+    Core RAG implementation for semantic search over market knowledge.
+    Supports storing and retrieving:
+    - Market trends (neighborhood conditions, appreciation)
+    - Comparable properties (recent sales)
+    - Regulations (local real estate rules)
+    
+    Uses cosine similarity for vector comparisons.
     """
     
     def __init__(self, db_path: str = "./chroma_db"):
-        """
-        Initialize knowledge base
+        """Initialize knowledge base with persistent storage.
         
         Args:
-            db_path: Where to store the Chroma database
+            db_path: Directory path for Chroma database persistence.
         """
         self.client = chromadb.PersistentClient(path=db_path)
         
-        # Create/get collection for all market data
+        # Create/get collection with cosine similarity
         self.market_data = self.client.get_or_create_collection(
             name="market_data",
             metadata={"hnsw:space": "cosine"}
@@ -31,13 +56,24 @@ class RealEstateKnowledgeBase:
         self.is_initialized = False
     
     def add_data(self, items: List[Dict[str, Any]]):
-        """
-        Add items to knowledge base
+        """Add items to knowledge base for semantic search indexing.
         
-        Each item should have:
-        - id: unique identifier
-        - text: the content
-        - metadata: tags for filtering (type, category, etc.)
+        Adds items to the Chroma collection. Documents are automatically
+        embedded and indexed for semantic similarity search.
+        
+        Args:
+            items: List of dicts, each with:
+                - id: Unique identifier for the item
+                - text: The content to index
+                - metadata: Optional dict with tags/filtering info
+                
+        Example:
+            >>> items = [{
+            ...     "id": "market_1",
+            ...     "text": "Northridge shows 8% yearly appreciation",
+            ...     "metadata": {"type": "trend", "neighborhood": "Northridge"}
+            ... }]
+            >>> kb.add_data(items)
         """
         if not items:
             return
@@ -55,15 +91,27 @@ class RealEstateKnowledgeBase:
         print(f"✓ Added {len(items)} items to knowledge base")
     
     def search(self, query: str, top_k: int = 3) -> List[Dict[str, Any]]:
-        """
-        Search for relevant information
+        """Search for relevant information using semantic similarity.
+        
+        Performs semantic search on indexed documents. The query is embedded
+        and compared against document embeddings using cosine similarity.
         
         Args:
-            query: What to search for
-            top_k: How many results to return
+            query: Natural language search query. Should describe what you're
+                   looking for (e.g., \"property appreciation in Northridge\")
+            top_k: Number of results to return. Default 3.
             
         Returns:
-            List of relevant documents with metadata
+            List of dicts with:
+                - id: Document identifier
+                - text: The document content
+                - metadata: Associated metadata
+                - relevance: Similarity score (0-1, higher = more similar)
+                
+        Example:
+            >>> results = kb.search(\"market conditions\", top_k=3)
+            >>> for result in results:
+            ...     print(f\"{result['text']} (relevance: {result['relevance']})\")
         """
         try:
             results = self.market_data.query(
