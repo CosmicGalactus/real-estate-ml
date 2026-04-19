@@ -16,10 +16,11 @@ st.set_page_config(
     page_title="Real Estate Price Predictor",
     page_icon="🏡",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
 )
 
-st.markdown("""
+st.markdown(
+    """
 <style>
     * {
         margin: 0;
@@ -161,7 +162,10 @@ st.markdown("""
         box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
     }
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
+
 
 @st.cache_resource
 def load_model():
@@ -171,8 +175,11 @@ def load_model():
             metrics = json.load(f)
         return model, metrics
     except FileNotFoundError:
-        st.error("❌ Model files not found. Please train the model first using: python3 src/train.py")
+        st.error(
+            "❌ Model files not found. Please train the model first using: python3 src/train.py"
+        )
         st.stop()
+
 
 @st.cache_data
 def load_dataset():
@@ -181,27 +188,41 @@ def load_dataset():
     except FileNotFoundError:
         return None
 
+
 model, metrics = load_model()
 df = load_dataset()
 
-st.markdown("""
+st.markdown(
+    """
 <div class="main-header">
     <h1>🏡 Real Estate Price Predictor</h1>
     <p>Intelligent property valuation powered by Machine Learning</p>
 </div>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["💰 Price Prediction", "📊 Model Performance", "🤖 AI Advisory", "❓ How It Works", "ℹ️ About"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(
+    [
+        "💰 Price Prediction",
+        "📊 Model Performance",
+        "🤖 AI Advisory",
+        "❓ How It Works",
+        "ℹ️ About",
+    ]
+)
 
 with tab1:
-    st.markdown('<div class="section-title">Property Details</div>', unsafe_allow_html=True)
-    
+    st.markdown(
+        '<div class="section-title">Property Details</div>', unsafe_allow_html=True
+    )
+
     col_main, col_sidebar = st.columns([2.5, 1.5])
-    
+
     with col_main:
         st.markdown('<div class="input-section">', unsafe_allow_html=True)
         st.markdown("### Basic Information")
-        
+
         col_a, col_b, col_c = st.columns(3)
         with col_a:
             gr_liv_area = st.number_input(
@@ -209,198 +230,209 @@ with tab1:
                 min_value=500,
                 max_value=6000,
                 value=1500,
-                step=100
+                step=100,
             )
             total_bsmt_sf = st.number_input(
                 "🛋️ Basement Area (sq ft)",
                 min_value=0,
                 max_value=3500,
                 value=1000,
-                step=100
+                step=100,
             )
             lot_area = st.number_input(
                 "📍 Lot Area (sq ft)",
                 min_value=1000,
                 max_value=50000,
                 value=10000,
-                step=500
+                step=500,
             )
-        
+
         with col_b:
             overall_qual = st.slider(
-                "⭐ Overall Quality (1-10)",
-                min_value=1,
-                max_value=10,
-                value=7
+                "⭐ Overall Quality (1-10)", min_value=1, max_value=10, value=7
             )
             overall_cond = st.slider(
-                "🏗️ Overall Condition (1-10)",
-                min_value=1,
-                max_value=10,
-                value=7
+                "🏗️ Overall Condition (1-10)", min_value=1, max_value=10, value=7
             )
             year_built = st.number_input(
-                "📅 Year Built",
-                min_value=1800,
-                max_value=2026,
-                value=2000,
-                step=1
+                "📅 Year Built", min_value=1800, max_value=2026, value=2000, step=1
             )
-        
+
         with col_c:
             first_flr_sf = st.number_input(
                 "🪜 1st Floor Area (sq ft)",
                 min_value=400,
                 max_value=4000,
                 value=1200,
-                step=100
+                step=100,
             )
             garage_area = st.number_input(
                 "🚗 Garage Area (sq ft)",
                 min_value=0,
                 max_value=1500,
                 value=500,
-                step=50
+                step=50,
             )
             garage_cars = st.number_input(
-                "🚙 Garage Cars",
-                min_value=0,
-                max_value=4,
-                value=2,
-                step=1
+                "🚙 Garage Cars", min_value=0, max_value=4, value=2, step=1
             )
-        
+
         st.markdown("</div>", unsafe_allow_html=True)
-        
+
         st.markdown('<div class="input-section">', unsafe_allow_html=True)
         st.markdown("### Rooms & Features")
-        
+
         col_d, col_e, col_f = st.columns(3)
         with col_d:
             bedrooms = st.number_input(
-                "🛏️ Bedrooms",
-                min_value=0,
-                max_value=10,
-                value=3,
-                step=1
+                "🛏️ Bedrooms", min_value=0, max_value=10, value=3, step=1
             )
         with col_e:
             bathrooms = st.number_input(
-                "🚿 Bathrooms",
-                min_value=0,
-                max_value=10,
-                value=2,
-                step=1
+                "🚿 Bathrooms", min_value=0, max_value=10, value=2, step=1
             )
         with col_f:
             kitchen = st.number_input(
-                "🍳 Kitchens",
-                min_value=1,
-                max_value=3,
-                value=1,
-                step=1
+                "🍳 Kitchens", min_value=1, max_value=3, value=1, step=1
             )
-        
+
         st.markdown("</div>", unsafe_allow_html=True)
-        
+
         st.markdown('<div class="input-section">', unsafe_allow_html=True)
         st.markdown("### Location & Type")
-        
+
         col_g, col_h = st.columns(2)
         with col_g:
             neighborhood = st.selectbox(
                 "🏘️ Neighborhood",
-                ["CollgCr", "Veenker", "Crawfor", "NoRidge", "Mitchel", "Somerst", "NWAmes", "OldTown", "BrkSide", "Sawyer", "NridgHt", "NAmes", "Blmngtn", "BrDale", "IDOTRR", "MeadowV"]
+                [
+                    "CollgCr",
+                    "Veenker",
+                    "Crawfor",
+                    "NoRidge",
+                    "Mitchel",
+                    "Somerst",
+                    "NWAmes",
+                    "OldTown",
+                    "BrkSide",
+                    "Sawyer",
+                    "NridgHt",
+                    "NAmes",
+                    "Blmngtn",
+                    "BrDale",
+                    "IDOTRR",
+                    "MeadowV",
+                ],
             )
             bldg_type = st.selectbox(
-                "🏢 Building Type",
-                ["1Fam", "2FmCon", "Duplex", "TwnhsE", "TwnhsI"]
+                "🏢 Building Type", ["1Fam", "2FmCon", "Duplex", "TwnhsE", "TwnhsI"]
             )
-        
+
         with col_h:
             house_style = st.selectbox(
                 "🏠 House Style",
-                ["2Story", "1Story", "1.5Fin", "1.5Unf", "SFoyer", "SLvl"]
+                ["2Story", "1Story", "1.5Fin", "1.5Unf", "SFoyer", "SLvl"],
             )
-        
+
         st.markdown("</div>", unsafe_allow_html=True)
-    
+
     with col_sidebar:
-        st.markdown('<div class="section-title" style="font-size: 1.2em;">Model Metrics</div>', unsafe_allow_html=True)
-        
-        st.markdown(f"""
+        st.markdown(
+            '<div class="section-title" style="font-size: 1.2em;">Model Metrics</div>',
+            unsafe_allow_html=True,
+        )
+
+        st.markdown(
+            f"""
         <div class="metric-card">
             <div class="metric-card-label">Accuracy</div>
             <div class="metric-card-value">{metrics['accuracy']:.2f}%</div>
         </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown(f"""
+        """,
+            unsafe_allow_html=True,
+        )
+
+        st.markdown(
+            f"""
         <div class="metric-card">
             <div class="metric-card-label">Precision</div>
             <div class="metric-card-value">{metrics['precision']:.2f}%</div>
         </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown(f"""
+        """,
+            unsafe_allow_html=True,
+        )
+
+        st.markdown(
+            f"""
         <div class="metric-card">
             <div class="metric-card-label">R² Score</div>
             <div class="metric-card-value">{metrics['test_r2']:.3f}</div>
         </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown(f"""
+        """,
+            unsafe_allow_html=True,
+        )
+
+        st.markdown(
+            f"""
         <div class="metric-card">
             <div class="metric-card-label">Test MAE</div>
             <div class="metric-card-value">${metrics['test_mae']:,.0f}</div>
         </div>
-        """, unsafe_allow_html=True)
-    
+        """,
+            unsafe_allow_html=True,
+        )
+
     st.divider()
-    
+
     if st.button("🔮 Predict Price", use_container_width=True, type="primary"):
         house_age = 2026 - year_built
         quality_area = overall_qual * gr_liv_area
         quality_cond_score = overall_qual * overall_cond
         total_floor = first_flr_sf + total_bsmt_sf
-        
-        input_df = pd.DataFrame({
-            'Gr Liv Area': [gr_liv_area],
-            'Total Bsmt SF': [total_bsmt_sf],
-            '1st Flr SF': [first_flr_sf],
-            'Garage Area': [garage_area],
-            'Lot Area': [lot_area],
-            'Overall Qual': [overall_qual],
-            'Overall Cond': [overall_cond],
-            'Year Built': [year_built],
-            'House_Age': [house_age],
-            'Bedroom AbvGr': [bedrooms],
-            'Full Bath': [bathrooms],
-            'Half Bath': [0],
-            'Kitchen AbvGr': [kitchen],
-            'TotRms AbvGrd': [bedrooms + bathrooms + 3],
-            'Garage Cars': [garage_cars],
-            'Quality_Area': [quality_area],
-            'Quality_Condition_Score': [quality_cond_score],
-            'Total_Floor_Area': [total_floor],
-            'Neighborhood': [neighborhood],
-            'Bldg Type': [bldg_type],
-            'House Style': [house_style]
-        })
-        
+
+        input_df = pd.DataFrame(
+            {
+                "Gr Liv Area": [gr_liv_area],
+                "Total Bsmt SF": [total_bsmt_sf],
+                "1st Flr SF": [first_flr_sf],
+                "Garage Area": [garage_area],
+                "Lot Area": [lot_area],
+                "Overall Qual": [overall_qual],
+                "Overall Cond": [overall_cond],
+                "Year Built": [year_built],
+                "House_Age": [house_age],
+                "Bedroom AbvGr": [bedrooms],
+                "Full Bath": [bathrooms],
+                "Half Bath": [0],
+                "Kitchen AbvGr": [kitchen],
+                "TotRms AbvGrd": [bedrooms + bathrooms + 3],
+                "Garage Cars": [garage_cars],
+                "Quality_Area": [quality_area],
+                "Quality_Condition_Score": [quality_cond_score],
+                "Total_Floor_Area": [total_floor],
+                "Neighborhood": [neighborhood],
+                "Bldg Type": [bldg_type],
+                "House Style": [house_style],
+            }
+        )
+
         try:
             predicted_price = model.predict(input_df)[0]
-            
-            st.markdown(f"""
+
+            st.markdown(
+                f"""
             <div class="prediction-result">
                 <h2>Estimated Price</h2>
                 <h1>${predicted_price:,.0f}</h1>
             </div>
-            """, unsafe_allow_html=True)
-            
+            """,
+                unsafe_allow_html=True,
+            )
+
             col_info1, col_info2 = st.columns(2)
             with col_info1:
-                st.markdown(f"""
+                st.markdown(
+                    f"""
                 <div class="info-box">
                     <strong>📋 Property Summary</strong><br><br>
                     🏠 Living Area: {gr_liv_area:,} sq ft<br>
@@ -409,10 +441,13 @@ with tab1:
                     📅 Year Built: {year_built}<br>
                     ⭐ Quality: {overall_qual}/10
                 </div>
-                """, unsafe_allow_html=True)
-            
+                """,
+                    unsafe_allow_html=True,
+                )
+
             with col_info2:
-                st.markdown(f"""
+                st.markdown(
+                    f"""
                 <div class="success-box">
                     <strong>🤖 Model Info</strong><br><br>
                     ✓ Accuracy: {metrics['accuracy']:.2f}%<br>
@@ -420,73 +455,103 @@ with tab1:
                     ✓ Training Samples: {metrics['train_size']:,}<br>
                     ✓ Features Used: {metrics['num_features']}
                 </div>
-                """, unsafe_allow_html=True)
-        
+                """,
+                    unsafe_allow_html=True,
+                )
+
         except Exception as e:
             st.error(f"❌ Prediction failed: {str(e)}")
 
 with tab2:
-    st.markdown('<div class="section-title">Performance Metrics</div>', unsafe_allow_html=True)
-    
+    st.markdown(
+        '<div class="section-title">Performance Metrics</div>', unsafe_allow_html=True
+    )
+
     col1, col2, col3, col4 = st.columns(4)
-    col1.markdown(f"""
+    col1.markdown(
+        f"""
     <div class="metric-card">
         <div class="metric-card-label">Test MAE</div>
         <div class="metric-card-value">${metrics['test_mae']:,.0f}</div>
     </div>
-    """, unsafe_allow_html=True)
-    
-    col2.markdown(f"""
+    """,
+        unsafe_allow_html=True,
+    )
+
+    col2.markdown(
+        f"""
     <div class="metric-card">
         <div class="metric-card-label">Test RMSE</div>
         <div class="metric-card-value">${metrics['test_rmse']:,.0f}</div>
     </div>
-    """, unsafe_allow_html=True)
-    
-    col3.markdown(f"""
+    """,
+        unsafe_allow_html=True,
+    )
+
+    col3.markdown(
+        f"""
     <div class="metric-card">
         <div class="metric-card-label">Precision</div>
         <div class="metric-card-value">{metrics['precision']:.2f}%</div>
     </div>
-    """, unsafe_allow_html=True)
-    
-    col4.markdown(f"""
+    """,
+        unsafe_allow_html=True,
+    )
+
+    col4.markdown(
+        f"""
     <div class="metric-card">
         <div class="metric-card-label">CV Mean</div>
         <div class="metric-card-value">{metrics['cv_mean']:.4f}</div>
     </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown('<div class="section-title">Training Details</div>', unsafe_allow_html=True)
-    
+    """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        '<div class="section-title">Training Details</div>', unsafe_allow_html=True
+    )
+
     col_a, col_b, col_c, col_d = st.columns(4)
-    col_a.markdown(f"""
+    col_a.markdown(
+        f"""
     <div class="metric-card">
         <div class="metric-card-label">Training Samples</div>
         <div class="metric-card-value">{metrics['train_size']:,}</div>
     </div>
-    """, unsafe_allow_html=True)
-    
-    col_b.markdown(f"""
+    """,
+        unsafe_allow_html=True,
+    )
+
+    col_b.markdown(
+        f"""
     <div class="metric-card">
         <div class="metric-card-label">Features Used</div>
         <div class="metric-card-value">{metrics['num_features']}</div>
     </div>
-    """, unsafe_allow_html=True)
-    
-    col_c.markdown(f"""
+    """,
+        unsafe_allow_html=True,
+    )
+
+    col_c.markdown(
+        f"""
     <div class="metric-card">
         <div class="metric-card-label">Accuracy</div>
         <div class="metric-card-value">{metrics['accuracy']:.2f}%</div>
     </div>
-    """, unsafe_allow_html=True)
-    
-    col_d.markdown(f"""
+    """,
+        unsafe_allow_html=True,
+    )
+
+    col_d.markdown(
+        f"""
     <div class="metric-card">
         <div class="metric-card-label">R² Score</div>
         <div class="metric-card-value">{metrics['test_r2']:.4f}</div>
     </div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
 with tab3:
     render_advisory_tab()
@@ -495,9 +560,12 @@ with tab4:
     render_how_it_works()
 
 with tab5:
-    st.markdown('<div class="section-title">About This Project</div>', unsafe_allow_html=True)
-    
-    st.markdown("""
+    st.markdown(
+        '<div class="section-title">About This Project</div>', unsafe_allow_html=True
+    )
+
+    st.markdown(
+        """
     ## 🏡 Real Estate ML: Intelligent Property Valuation & Advisory
     
     This application is a comprehensive capstone project on intelligent property price prediction 
@@ -645,7 +713,10 @@ with tab5:
     - Professional code documentation and best practices
     
     Built with focus on transparency, accuracy, and user experience.
-    """.format(metrics['accuracy'], metrics['test_r2'], metrics['test_mae'], metrics['test_rmse']))
-
-
-
+    """.format(
+            metrics["accuracy"],
+            metrics["test_r2"],
+            metrics["test_mae"],
+            metrics["test_rmse"],
+        )
+    )
