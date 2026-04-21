@@ -2,8 +2,6 @@
 
 > A capstone project combining ensemble machine learning with an agentic AI advisory system for residential real estate valuation and investment analysis.
 
----
-
 ## Table of Contents
 
 1. [Project Overview](#1-project-overview)
